@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="sq">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>💄 Beauty Shop – Katalog & Porosi</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="wrap">
+        <div class="brand">
+          <div class="logo"></div>
+          <div>
+            <h1 id="brand">Beauty Shop</h1>
+            <div class="subtitle">
+              Katalog kozmetike • Porosi me WhatsApp • Menaxhim i thjeshtë
+            </div>
+          </div>
+        </div>
+        <div class="toolbar">
+          <input
+            id="q"
+            class="input"
+            placeholder="Kërko p.sh. lipstick, krem, parfum…"
+          />
+          <select id="cat" class="select">
+            <option value="">Të gjitha kategoritë</option>
+          </select>
+          <select id="sort" class="select">
+            <option value="new">Më të rejat</option>
+            <option value="priceAsc">Çmimi ↑</option>
+            <option value="priceDesc">Çmimi ↓</option>
+            <option value="az">A–Z</option>
+          </select>
+          <button id="cartBtn" class="btn">🛒 Shporta (0)</button>
+        </div>
+      </div>
+    </header>
+    <main class="wrap">
+      <div id="grid" class="grid"></div>
+    </main>
+    <!-- Shporta -->
+    <aside id="cartPanel" class="panel" aria-label="Shporta">
+      <h3>🛒 Shporta</h3>
+      <div class="content" id="cartList"></div>
+      <button id="closeCart" class="close-btn" aria-label="Close">×</button>
+      <div class="foot">
+        <div class="row">
+          <span>Artikuj:</span><strong id="cartCount">0</strong>
+        </div>
+        <div class="row">
+          <span>Totali:</span><strong id="cartTotal">0</strong>
+        </div>
+        <div class="divider"></div>
+        <div class="grid2">
+          <button id="clearCart" class="btn ghost danger">Pastro</button>
+          <button id="waOrder" class="btn">📲 Porosit në WhatsApp</button>
+        </div>
+        <div class="mini muted" style="margin-top: 6px">
+          Porosia dërgohet si mesazh WhatsApp me listën e produkteve dhe
+          totalin.
+        </div>
+      </div>
+    </aside>
+    <!-- Settings -->
+    <aside id="settingsPanel" class="panel" aria-label="Cilësime">
+      <h3>⚙ Cilësime dyqani</h3>
+      <button id="closeCart2" class="close-btn2" aria-label="Close">×</button>
+      <div class="content">
+        <label
+          >Emri i dyqanit <br /><input
+            id="setBrand"
+            class="input"
+            placeholder="p.sh. Kërtalli Beauty"
+            style="margin-top: 5px; margin-left: -2px"
+        /></label>
+        <label style="margin-top: 20px"
+          >Nr. WhatsApp (me prefiks) <br />
+          <input
+            id="setPhone"
+            class="input"
+            placeholder="p.sh. +355676666444"
+            style="margin-top: 5px; margin-left: -2px"
+        /></label>
+        <label style="margin-top: 20px"
+          >Monedha
+          <select id="setCurrency" class="select">
+            <option value="Lek">Lek</option>
+            <option value="€">€</option>
+          </select>
+        </label>
+        <div class="note small">
+          Ky numër përdoret për butonin "Porosit në WhatsApp". Ruhet lokalisht
+          në këtë pajisje.
+        </div>
+        <button id="saveSettings" class="btn success">Ruaj cilësimet</button>
+      </div>
+    </aside>
+    <!-- Admin: shto/ndrysho produkte -->
+    <dialog id="adminDlg">
+      <form method="dialog" id="adminForm" style="min-width: 245px">
+        <h3>🛠 Produkt i ri / Ndrysho</h3>
+        <div class="grid2">
+          <label
+            >Emri: <br /><input class="input" name="name" required
+          /></label>
+          <label
+            >Kategoria: <br /><input
+              class="input"
+              name="category"
+              list="catList"
+              required
+          /></label>
+          <datalist id="catList"></datalist>
+          <label
+            >Çmimi: <br /><input
+              class="input"
+              name="price"
+              type="number"
+              step="0.01"
+              min="0"
+              required
+          /></label>
+          <label
+            >Stoku: <br /><input
+              class="input"
+              name="stock"
+              type="number"
+              min="0"
+              value="100"
+          /></label>
+          <label
+            >Foto (URL): <br /><input
+              class="input"
+              name="img"
+              placeholder="https://..."
+          /></label>
+          <label
+            >Etiketa (comma): <br />
+            <input
+              class="input"
+              name="tags"
+              placeholder="vegan, matte"
+              required
+          /></label>
+        </div>
+        <div class="row" style="margin-top: 10px">
+          <button type="button" class="btn ghost" id="mbyll">Mbyll</button>
+          <button id="saveProd" value="default" class="btn">Ruaj</button>
+        </div>
+      </form>
+    </dialog>
+    <!-- Floating buttons -->
+    <div class="floating">
+      <button id="settingsBtn" class="btn ghost">⚙ Cilësime</button>
+      <button id="exportBtn" class="btn ghost">⬇ Eksporto</button>
+      <input id="importFile" type="file" accept="application/json" hidden />
+      <button id="importBtn" class="btn ghost">⬆ Importo</button>
+    </div>
+    <div class="admin-btn">
+      <button id="adminBtn" class="btn">➕ Produkt</button>
+    </div>
+    <script>
+      // ======= Storage helpers =======
+      const LS = {
+        productsKey: "beauty_products_v1",
+        settingsKey: "beauty_settings_v1",
+        cartKey: "beauty_cart_v1",
+        getProducts() {
+          return JSON.parse(localStorage.getItem(this.productsKey) || "[]");
+        },
+        setProducts(d) {
+          localStorage.setItem(this.productsKey, JSON.stringify(d));
+        },
+        getSettings() {
+          return JSON.parse(localStorage.getItem(this.settingsKey) || "{}");
+        },
+        setSettings(d) {
+          localStorage.setItem(this.settingsKey, JSON.stringify(d));
+        },
+        getCart() {
+          return JSON.parse(localStorage.getItem(this.cartKey) || "[]");
+        },
+        setCart(d) {
+          localStorage.setItem(this.cartKey, JSON.stringify(d));
+        },
+      };
+
+      // ======= Demo data (first run) =======
+      const DEMO = [
+        {
+          id: cid(),
+          name: "Matte Lipstick Rose",
+          category: "Makeup",
+          price: 699,
+          stock: 50,
+          img: "https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=1200&auto=format&fit=crop",
+          tags: ["matte", "longwear"],
+        },
+        {
+          id: cid(),
+          name: "Hydra Face Cream",
+          category: "Skincare",
+          price: 1299,
+          stock: 30,
+          img: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop",
+          tags: ["hydrating", "day"],
+        },
+        {
+          id: cid(),
+          name: "Argan Hair Oil",
+          category: "Hair",
+          price: 999,
+          stock: 40,
+          img: "https://images.unsplash.com/photo-1586411109880-cb08bd490e47?q=80&w=1200&auto=format&fit=crop",
+          tags: ["repair", "shine"],
+        },
+        {
+          id: cid(),
+          name: "Blush Peony",
+          category: "Makeup",
+          price: 849,
+          stock: 25,
+          img: "https://images.unsplash.com/photo-1585238341986-34ad8c7a1fb0?q=80&w=1200&auto=format&fit=crop",
+          tags: ["silky"],
+        },
+        {
+          id: cid(),
+          name: "Eau de Parfum – Flora",
+          category: "Fragrance",
+          price: 1990,
+          stock: 15,
+          img: "https://images.unsplash.com/photo-1592945403244-b3fbafd7ba20?q=80&w=1200&auto=format&fit=crop",
+          tags: ["floral"],
+        },
+        {
+          id: cid(),
+          name: "Nail Polish – Nude",
+          category: "Nails",
+          price: 390,
+          stock: 80,
+          img: "https://images.unsplash.com/photo-1616394584738-fc6e6121d794?q=80&w=1200&auto=format&fit=crop",
+          tags: ["quick-dry"],
+        },
+      ];
+      // ======= State =======
+      let products = LS.getProducts();
+      if (!products.length) {
+        products = [...DEMO].reverse();
+        LS.setProducts(products);
+      }
+      let csrfToken = "";
+      let cart = LS.getCart();
+      let settings = Object.assign(
+        { brand: "Beauty Shop", phone: "", currency: "Lek" },
+        LS.getSettings()
+      );
+
+      async function init() {
+        if (!csrfToken) await initCSRF();
+        await loadProducts();
+        setBrand.value = settings.brand;
+        setPhone.value = settings.phone;
+        setCurrency.value = settings.currency;
+        brand.textContent = settings.brand;
+        renderCategories();
+        renderProducts();
+        updateCart();
+      }
+      init();
+
+      // ======= UI refs =======
+      const grid = document.getElementById("grid");
+      const q = document.getElementById("q");
+      const cat = document.getElementById("cat");
+      const sortSel = document.getElementById("sort");
+      const cartBtn = document.getElementById("cartBtn");
+      const cartPanel = document.getElementById("cartPanel");
+      const cartList = document.getElementById("cartList");
+      const cartCount = document.getElementById("cartCount");
+      const cartTotal = document.getElementById("cartTotal");
+      const waOrder = document.getElementById("waOrder");
+      const clearCart = document.getElementById("clearCart");
+      const adminBtn = document.getElementById("adminBtn");
+      const mbyllBtn = document.getElementById("mbyll");
+      const adminDlg = document.getElementById("adminDlg");
+      const adminForm = document.getElementById("adminForm");
+      const setBrand = document.getElementById("setBrand");
+      const setPhone = document.getElementById("setPhone");
+      const setCurrency = document.getElementById("setCurrency");
+      const saveSettings = document.getElementById("saveSettings");
+      const settingsPanel = document.getElementById("settingsPanel");
+      const settingsBtn = document.getElementById("settingsBtn");
+      const brand = document.getElementById("brand");
+      const exportBtn = document.getElementById("exportBtn");
+      const importBtn = document.getElementById("importBtn");
+      const importFile = document.getElementById("importFile");
+      const catList = document.getElementById("catList");
+      const closeCart = document.getElementById("closeCart");
+      const closeCart2 = document.getElementById("closeCart2");
+
+      // ======= Init =======
+      setBrand.value = settings.brand;
+      setPhone.value = settings.phone;
+      setCurrency.value = settings.currency;
+      brand.textContent = settings.brand;
+      renderCategories();
+      renderProducts();
+      updateCart();
+
+      // ======= Events =======
+      q.addEventListener("input", renderProducts);
+      cat.addEventListener("change", renderProducts);
+      sortSel.addEventListener("change", renderProducts);
+      cartBtn.addEventListener("click", () =>
+        cartPanel.classList.toggle("open")
+      );
+      closeCart.addEventListener("click", () =>
+        cartPanel.classList.remove("open")
+      );
+      settingsBtn.addEventListener("click", () =>
+        settingsPanel.classList.toggle("open")
+      );
+      closeCart2.addEventListener("click", () =>
+        settingsPanel.classList.remove("open")
+      );
+      saveSettings.addEventListener("click", () => {
+        const phone = setPhone.value.trim();
+        const phoneRegex = /^\+\d{7,15}$/;
+        if (phone && !phoneRegex.test(phone)) {
+          toast("❌ Numri duhet te nis me + dhe të ketë 7-15 shifra.");
+          setPhone.focus();
+          return;
+        }
+        settings.brand = setBrand.value.trim() || "Beauty Shop";
+        settings.phone = phone;
+        settings.currency = setCurrency.value;
+        LS.setSettings(settings);
+        brand.textContent = settings.brand;
+        renderProducts();
+        updateCart();
+        toast("✅ U ruajtën cilësimet.");
+      });
+      adminBtn.addEventListener("click", () => {
+        adminForm.reset();
+        adminDlg.showModal();
+      });
+      mbyllBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        adminDlg.close();
+      });
+      adminForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const fd = new FormData(adminForm);
+
+        if (editingId) {
+          const p = products.find((x) => x.id === editingId);
+          if (!p) return;
+
+          p.name = fd.get("name").trim();
+          p.category = fd.get("category").trim();
+          p.price = Number(fd.get("price")) || 0;
+          p.stock = Number(fd.get("stock")) || 0;
+          p.img = (fd.get("img") || "").trim();
+          p.tags = (fd.get("tags") || "")
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+          await saveProductToServer(p);
+          LS.setProducts(products);
+          cart.forEach((item) => {
+            if (item.id === p.id) {
+              item.name = p.name;
+              item.price = p.price;
+              item.category = p.category;
+            }
+          });
+          toast("✏ Produkti u përditësua.");
+        } else {
+          const item = {
+            id: cid(),
+            name: fd.get("name").trim(),
+            category: fd.get("category").trim(),
+            price: Number(fd.get("price")) || 0,
+            stock: Number(fd.get("stock")) || 0,
+            img: (fd.get("img") || "").trim(),
+            tags: (fd.get("tags") || "")
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean),
+          };
+          await saveProductToServer(item);
+          products.unshift(item);
+          LS.setProducts(products);
+          toast("💾 Produkti u shtua.");
+        }
+        saveCart();
+        renderCategories();
+        renderProducts();
+        adminDlg.close();
+        editingId = null;
+        adminForm.reset();
+      });
+
+      exportBtn.addEventListener("click", async () => {
+        await loadProducts();
+        const data = { products, settings };
+        const blob = new Blob([JSON.stringify(data, null, 2)], {
+          type: "application/json",
+        });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "beauty_data.json";
+        a.click();
+      });
+      importBtn.addEventListener("click", () => importFile.click());
+      importFile.addEventListener("change", async () => {
+        const file = importFile.files[0];
+        if (!file) return;
+        const txt = await file.text();
+        try {
+          const obj = JSON.parse(txt);
+          if (!csrfToken) await initCSRF();
+          if (obj.products) {
+            const imported = obj.products;
+            const existingMap = Object.fromEntries(
+              products.map((p) => [p.id, p])
+            );
+
+            const newItemsReversed = imported.filter((p) => !existingMap[p.id]);
+            const newItems = [...newItemsReversed].reverse();
+            const updatedMap = { ...existingMap };
+
+            for (const p of imported) {
+              updatedMap[p.id] = p;
+            }
+            products = [
+              ...newItems,
+              ...Object.values(updatedMap).filter(
+                (p) => !newItems.some((n) => n.id === p.id)
+              ),
+            ];
+
+            LS.setProducts(products);
+            const result = await importProductsToServer({
+              products: obj.products,
+            });
+          }
+
+          if (obj.settings) {
+            settings = Object.assign(settings, obj.settings);
+            LS.setSettings(settings);
+            brand.textContent = settings.brand;
+            setBrand.value = settings.brand;
+            setPhone.value = settings.phone;
+            setCurrency.value = settings.currency;
+          }
+          importFile.value = "";
+          renderCategories();
+          renderProducts();
+          updateCart();
+          toast("📥 Import i suksesshëm.");
+        } catch (err) {
+          alert("Skedari nuk është valid JSON.");
+        }
+      });
+
+      clearCart.addEventListener("click", () => {
+        cart = [];
+        LS.setCart(cart);
+        updateCart();
+      });
+      waOrder.addEventListener("click", () => {
+        if (!cart.length) return alert("Shporta është bosh.");
+        if (!settings.phone)
+          return alert("Vendos numrin WhatsApp te Cilësimet.");
+        const lines = cart
+          .map((i) => `• ${i.name} x${i.qty} = ${format(i.qty * i.price)}`)
+          .join("%0A");
+        const total = format(cart.reduce((s, i) => s + i.qty * i.price, 0));
+        const msg = `Përshëndetje ${settings.brand}!%0A%0APorosia ime:%0A${lines}%0A%0ATotal: ${total}`;
+        const href = `https://wa.me/${settings.phone.replace(
+          /\D/g,
+          ""
+        )}?text=${msg}`;
+        window.open(href, "_blank");
+      });
+
+      // ======= Renderers =======
+      function renderCategories() {
+        const cats = Array.from(new Set(products.map((p) => p.category)))
+          .filter(Boolean)
+          .sort();
+        cat.innerHTML =
+          `<option value="">Të gjitha kategoritë</option>` +
+          cats.map((c) => `<option>${esc(c)}</option>`).join("");
+        catList.innerHTML = cats
+          .map((c) => `<option value="${esc(c)}"></option>`)
+          .join("");
+      }
+
+      function renderProducts() {
+        const term = q.value.toLowerCase().trim();
+        const c = cat.value;
+        let list = products.filter(
+          (p) =>
+            (!c || p.category === c) &&
+            (!term ||
+              [p.name, p.category, (p.tags || []).join(" ")]
+                .join(" ")
+                .toLowerCase()
+                .includes(term))
+        );
+        switch (sortSel.value) {
+          case "priceAsc":
+            list.sort((a, b) => a.price - b.price);
+            break;
+          case "priceDesc":
+            list.sort((a, b) => b.price - a.price);
+            break;
+          case "az":
+            list.sort((a, b) => a.name.localeCompare(b.name));
+            break;
+          default:
+            /* new */ list = list;
+            break;
+        }
+
+        grid.innerHTML = list.map((p) => cardHTML(p)).join("");
+        // bind buttons
+        grid.querySelectorAll("[data-add]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const id = btn.dataset.add;
+            const item = products.find((x) => x.id === id);
+            addToCart(item);
+          });
+        });
+        grid.querySelectorAll("[data-edit]").forEach((btn) => {
+          btn.addEventListener("click", () => openEdit(btn.dataset.edit));
+        });
+        grid.querySelectorAll("[data-del]").forEach((btn) => {
+          btn.addEventListener("click", () => delProduct(btn.dataset.del));
+        });
+      }
+
+      function cardHTML(p) {
+        const price = format(p.price);
+        const tags = (p.tags || [])
+          .map((t) => `<span class="tag">${esc(t)}</span>`)
+          .join("");
+        const stock =
+          p.stock > 0
+            ? `<span class="pill">Në stok: ${p.stock}</span>`
+            : ` <span class="pill danger">S'ka stok</span>`;
+        return `<div class="card">
+          <div style="position:relative">
+            <img src="${esc(
+              p.img ||
+                "https://images.unsplash.com/photo-1512204708464-8a9f81dc236c?q=80&w=1200&auto=format&fit=crop"
+            )}" alt="${esc(p.name)}" loading="lazy">
+            <span class="chip">${esc(p.category || "Kozmetikë")}</span>
+          </div>
+          <div class="card-b">
+            <div class="title">${esc(p.name)}</div>
+            <div class="row"><div class="price"><strong>${price}</strong></div> ${stock} </div>
+            <div class="tags">${tags}</div>
+            <div class="row">
+              <button class="btn" data-add="${p.id}">➕ Shto</button>
+              <button class="btn ghost" data-edit="${p.id}">✏</button>
+              <button class="btn ghost danger" data-del="${p.id}">🗑</button>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      function updateCart() {
+        const count = cart.reduce((s, i) => s + i.qty, 0);
+        const total = cart.reduce((s, i) => s + i.qty * i.price, 0);
+        cartBtn.textContent = `🛒 Shporta (${count})`;
+        cartCount.textContent = count;
+        cartTotal.textContent = format(total);
+        cartList.innerHTML =
+          cart
+            .map(
+              (i, idx) => `<div class="line">
+            <div style="flex:1">
+              <div><strong>${esc(i.name)}</strong></div>
+              <div class="small muted">${format(i.price)} • ${esc(
+                i.category
+              )}</div>
+            </div>
+            <div class="qty">
+              <button aria-label="-" data-minus="${idx}">–</button>
+              <span>${i.qty}</span>
+              <button aria-label="+" data-plus="${idx}">+</button>
+            </div>
+            <button class="btn ghost danger mini" data-rem="${idx}">Hiq</button>
+          </div>`
+            )
+            .join("") || '<div class="small muted">Shporta bosh.</div>';
+        // listeners
+        cartList.querySelectorAll("[data-plus]").forEach(
+          (b) =>
+            (b.onclick = () => {
+              cart[b.dataset.plus].qty++;
+              saveCart();
+            })
+        );
+        cartList.querySelectorAll("[data-minus]").forEach(
+          (b) =>
+            (b.onclick = () => {
+              const i = cart[b.dataset.minus];
+              i.qty = Math.max(1, i.qty - 1);
+              saveCart();
+            })
+        );
+        cartList.querySelectorAll("[data-rem]").forEach(
+          (b) =>
+            (b.onclick = () => {
+              cart.splice(b.dataset.rem, 1);
+              saveCart();
+            })
+        );
+      }
+
+      function addToCart(p) {
+        if (!p) return;
+        if (p.stock <= 0) return alert("S'ka stok për këtë produkt.");
+        const x = cart.find((i) => i.id === p.id);
+        if (x) x.qty++;
+        else
+          cart.push({
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            category: p.category,
+            qty: 1,
+          });
+        saveCart();
+      }
+      function saveCart() {
+        LS.setCart(cart);
+        updateCart();
+      }
+      let editingId = null;
+      function openEdit(id) {
+        const p = products.find((x) => x.id === id);
+        if (!p) return;
+        editingId = id;
+        adminDlg.showModal();
+        adminForm.name.value = p.name;
+        adminForm.category.value = p.category;
+        adminForm.price.value = p.price;
+        adminForm.stock.value = p.stock;
+        adminForm.img.value = p.img || "";
+        adminForm.tags.value = (p.tags || []).join(", ");
+      }
+
+      async function delProduct(id) {
+        if (!confirm("Ta fshij këtë produkt?")) return;
+        const res = await deleteProductFromServer(id);
+        products = products.filter((x) => x.id !== id);
+        LS.setProducts(products);
+        renderCategories();
+        renderProducts();
+        toast("🗑 Produkti u fshi.");
+      }
+
+      // ======= Utils =======
+      function cid() {
+        return "p" + Math.random().toString(36).slice(2, 9);
+      }
+      function esc(s) {
+        return String(s || "").replace(
+          /[&<>"']/g,
+          (m) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            }[m])
+        );
+      }
+      function format(n) {
+        const cur = settings.currency || "Lek";
+        const v = Number(n || 0);
+        return cur === "€"
+          ? (v / 100).toFixed(2) + " €"
+          : new Intl.NumberFormat("sq-AL").format(v) + " Lek";
+      }
+
+      // Mini toast
+      let toastT;
+      function toast(msg) {
+        clearTimeout(toastT);
+        let t = document.getElementById("toast");
+        if (!t) {
+          t = document.createElement("div");
+          t.id = "toast";
+          document.body.appendChild(t);
+        }
+        t.textContent = msg;
+        Object.assign(t.style, {
+          position: "fixed",
+          left: "50%",
+          bottom: "24px",
+          transform: "translateX(-50%)",
+          background: "#111827",
+          color: "#fff",
+          textAlign: "center",
+          padding: "10px 14px",
+          borderRadius: "10px",
+          boxShadow: "var(--shadow)",
+          zIndex: 1000,
+        });
+        toastT = setTimeout(() => {
+          t.remove();
+        }, 2200);
+      }
+      async function loadProducts() {
+        try {
+          const res = await fetch("get_products.php");
+          if (!res.ok) throw new Error("Failed to load products");
+          products = await res.json();
+          if (!products.length) {
+            products = DEMO;
+            for (const p of DEMO) {
+              await saveProductToServer(p);
+            }
+            const r2 = await fetch("get_products.php");
+            products = await r2.json();
+          }
+        } catch (err) {
+          console.error("loadProducts error", err);
+          products = LS.getProducts();
+        }
+      }
+
+      async function initCSRF() {
+        const res = await fetch("get_csrf_token.php");
+        const data = await res.json();
+        csrfToken = data.token;
+      }
+
+      async function saveProductToServer(p) {
+        try {
+          const res = await fetch("save_products.php", {
+            method: "POST",
+            headers: {
+              "X-CSRF-Token": csrfToken,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(p),
+          });
+          return await res.json();
+        } catch (err) {
+          console.error("saveProductToServer", err);
+          return null;
+        }
+      }
+
+      async function deleteProductFromServer(id) {
+        try {
+          const res = await fetch(`delete.php?id=${encodeURIComponent(id)}`, {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-Token": csrfToken,
+              "Content-Type": "application/json",
+            },
+          });
+          return await res.json();
+        } catch (err) {
+          console.error("deleteProductFromServer", err);
+          return null;
+        }
+      }
+
+      async function importProductsToServer(productsArray) {
+        try {
+          const res = await fetch("import_products.php", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRF-Token": csrfToken,
+            },
+            body: JSON.stringify(productsArray),
+          });
+          const data = await res.json();
+          return data;
+        } catch (err) {
+          console.error("Import error:", err);
+          return null;
+        }
+      }
+    </script>
+  </body>
+</html>

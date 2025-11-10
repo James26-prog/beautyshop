@@ -367,16 +367,21 @@
             .split(",")
             .map((s) => s.trim())
             .filter(Boolean);
-          await saveProductToServer(p);
-          LS.setProducts(products);
-          cart.forEach((item) => {
-            if (item.id === p.id) {
-              item.name = p.name;
-              item.price = p.price;
-              item.category = p.category;
-            }
-          });
-          toast("✏ Produkti u përditësua.");
+          const result = await saveProductToServer(p);
+          if (result && result.success && csrfToken) {
+            LS.setProducts(products);
+            cart.forEach((item) => {
+              if (item.id === p.id) {
+                item.name = p.name;
+                item.price = p.price;
+                item.category = p.category;
+              }
+            });
+            toast("✏ Produkti u përditësua.");
+          } else {
+            toast("⚠ Nuk u ruajt në server. Kontrollo lidhjen.");
+            return;
+          }
         } else {
           const item = {
             id: cid(),
@@ -390,10 +395,15 @@
               .map((s) => s.trim())
               .filter(Boolean),
           };
-          await saveProductToServer(item);
-          products.unshift(item);
-          LS.setProducts(products);
-          toast("💾 Produkti u shtua.");
+         const result = await saveProductToServer(item);
+          if (result && result.success && csrfToken) {
+            products.unshift(item);
+            LS.setProducts(products);
+            toast("💾 Produkti u shtua.");
+          } else {
+            toast("⚠ Nuk u ruajt në server. Produkti nuk u shtua.");
+            return;
+          }
         }
         saveCart();
         renderCategories();
@@ -441,11 +451,24 @@
                 (p) => !newItems.some((n) => n.id === p.id)
               ),
             ];
-
-            LS.setProducts(products);
             const result = await importProductsToServer({
               products: obj.products,
             });
+            if (result && result.success && csrfToken) {
+              products = [
+                ...newItems,
+                ...Object.values(updatedMap).filter(
+                  (p) => !newItems.some((n) => n.id === p.id)
+                ),
+              ];
+              LS.setProducts(products);
+              toast("📥 Import i suksesshëm.");
+            } else {
+              toast(
+                "⚠ Importi dështoi — serveri ose baza e të dhënave nuk janë të disponueshme."
+              );
+              return;
+            }
           }
 
           if (obj.settings) {
@@ -657,9 +680,16 @@
         adminForm.tags.value = (p.tags || []).join(", ");
       }
 
-      async function delProduct(id) {
+     async function delProduct(id) {
         if (!confirm("Ta fshij këtë produkt?")) return;
         const res = await deleteProductFromServer(id);
+        if (!res || !res.success || !csrfToken) {
+          toast(
+            "⚠ Nuk mund të fshihet — serveri ose baza e të dhënave nuk janë të disponueshme."
+          );
+          console.error("Delete failed:", res?.error || "Unknown error");
+          return;
+        }
         products = products.filter((x) => x.id !== id);
         LS.setProducts(products);
         renderCategories();
@@ -798,3 +828,4 @@
     </script>
   </body>
 </html>
+

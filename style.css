@@ -23,7 +23,12 @@ body {
 }
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu;
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Ubuntu;
   color: var(--text);
   background: linear-gradient(135deg, var(--bg), var(--bg2));
 }
@@ -230,6 +235,8 @@ button {
   flex: 1;
   display: grid;
   gap: 10px;
+  align-content: start;
+  grid-auto-rows: max-content;
 }
 #cartPanel .content {
   min-height: 300px;
@@ -335,6 +342,19 @@ dialog::backdrop {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+.no-products {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  color: var(--muted);
+  font-size: 16px;
+  text-align: center;
 }
 /* --- Responsive --- */
 @media (max-width: 900px) {

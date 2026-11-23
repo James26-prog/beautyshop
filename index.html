@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="sq">
   <head>
     <meta charset="UTF-8" />
@@ -13,17 +13,11 @@
           <div class="logo"></div>
           <div>
             <h1 id="brand">Beauty Shop</h1>
-            <div class="subtitle">
-              Katalog kozmetike • Porosi me WhatsApp • Menaxhim i thjeshtë
-            </div>
+            <div class="subtitle">Katalog kozmetike • Porosi me WhatsApp • Menaxhim i thjeshtë</div>
           </div>
         </div>
         <div class="toolbar">
-          <input
-            id="q"
-            class="input"
-            placeholder="Kërko p.sh. lipstick, krem, parfum…"
-          />
+          <input id="q" class="input" placeholder="Kërko p.sh. lipstick, krem, parfum…" />
           <select id="cat" class="select">
             <option value="">Të gjitha kategoritë</option>
           </select>
@@ -46,20 +40,15 @@
       <div class="content" id="cartList"></div>
       <button id="closeCart" class="close-btn" aria-label="Close">×</button>
       <div class="foot">
-        <div class="row">
-          <span>Artikuj:</span><strong id="cartCount">0</strong>
-        </div>
-        <div class="row">
-          <span>Totali:</span><strong id="cartTotal">0</strong>
-        </div>
+        <div class="row"><span>Artikuj:</span><strong id="cartCount">0</strong></div>
+        <div class="row"><span>Totali:</span><strong id="cartTotal">0</strong></div>
         <div class="divider"></div>
         <div class="grid2">
           <button id="clearCart" class="btn ghost danger">Pastro</button>
           <button id="waOrder" class="btn">📲 Porosit në WhatsApp</button>
         </div>
         <div class="mini muted" style="margin-top: 6px">
-          Porosia dërgohet si mesazh WhatsApp me listën e produkteve dhe
-          totalin.
+          Porosia dërgohet si mesazh WhatsApp me listën e produkteve dhe totalin.
         </div>
       </div>
     </aside>
@@ -91,8 +80,7 @@
           </select>
         </label>
         <div class="note small">
-          Ky numër përdoret për butonin "Porosit në WhatsApp". Ruhet lokalisht
-          në këtë pajisje.
+          Ky numër përdoret për butonin "Porosit në WhatsApp". Ruhet lokalisht në këtë pajisje.
         </div>
         <button id="saveSettings" class="btn success">Ruaj cilësimet</button>
       </div>
@@ -102,47 +90,15 @@
       <form method="dialog" id="adminForm" style="min-width: 245px">
         <h3>🛠 Produkt i ri / Ndrysho</h3>
         <div class="grid2">
-          <label
-            >Emri: <br /><input class="input" name="name" required
-          /></label>
-          <label
-            >Kategoria: <br /><input
-              class="input"
-              name="category"
-              list="catList"
-              required
-          /></label>
+          <label>Emri: <br /><input class="input" name="name" required /></label>
+          <label>Kategoria: <br /><input class="input" name="category" list="catList" required /></label>
           <datalist id="catList"></datalist>
-          <label
-            >Çmimi: <br /><input
-              class="input"
-              name="price"
-              type="number"
-              step="0.01"
-              min="0"
-              required
-          /></label>
-          <label
-            >Stoku: <br /><input
-              class="input"
-              name="stock"
-              type="number"
-              min="0"
-              value="100"
-          /></label>
-          <label
-            >Foto (URL): <br /><input
-              class="input"
-              name="img"
-              placeholder="https://..."
-          /></label>
+          <label>Çmimi: <br /><input class="input" name="price" type="number" step="0.01" min="0" required /></label>
+          <label>Stoku: <br /><input class="input" name="stock" type="number" min="0" value="100" /></label>
+          <label>Foto (URL): <br /><input class="input" name="img" placeholder="https://..." /></label>
           <label
             >Etiketa (comma): <br />
-            <input
-              class="input"
-              name="tags"
-              placeholder="vegan, matte"
-              required
+            <input class="input" name="tags" placeholder="vegan, matte" required
           /></label>
         </div>
         <div class="row" style="margin-top: 10px">
@@ -252,10 +208,7 @@
       }
       let csrfToken = "";
       let cart = LS.getCart();
-      let settings = Object.assign(
-        { brand: "Beauty Shop", phone: "", currency: "Lek" },
-        LS.getSettings()
-      );
+      let settings = Object.assign({ brand: "Beauty Shop", phone: "", currency: "Lek" }, LS.getSettings());
 
       async function init() {
         if (!csrfToken) await initCSRF();
@@ -313,18 +266,10 @@
       q.addEventListener("input", renderProducts);
       cat.addEventListener("change", renderProducts);
       sortSel.addEventListener("change", renderProducts);
-      cartBtn.addEventListener("click", () =>
-        cartPanel.classList.toggle("open")
-      );
-      closeCart.addEventListener("click", () =>
-        cartPanel.classList.remove("open")
-      );
-      settingsBtn.addEventListener("click", () =>
-        settingsPanel.classList.toggle("open")
-      );
-      closeCart2.addEventListener("click", () =>
-        settingsPanel.classList.remove("open")
-      );
+      cartBtn.addEventListener("click", () => cartPanel.classList.toggle("open"));
+      closeCart.addEventListener("click", () => cartPanel.classList.remove("open"));
+      settingsBtn.addEventListener("click", () => settingsPanel.classList.toggle("open"));
+      closeCart2.addEventListener("click", () => settingsPanel.classList.remove("open"));
       saveSettings.addEventListener("click", () => {
         const phone = setPhone.value.trim();
         const phoneRegex = /^\+\d{7,15}$/;
@@ -395,7 +340,7 @@
               .map((s) => s.trim())
               .filter(Boolean),
           };
-         const result = await saveProductToServer(item);
+          const result = await saveProductToServer(item);
           if (result && result.success && csrfToken) {
             products.unshift(item);
             LS.setProducts(products);
@@ -434,9 +379,7 @@
           if (!csrfToken) await initCSRF();
           if (obj.products) {
             const imported = obj.products;
-            const existingMap = Object.fromEntries(
-              products.map((p) => [p.id, p])
-            );
+            const existingMap = Object.fromEntries(products.map((p) => [p.id, p]));
 
             const newItemsReversed = imported.filter((p) => !existingMap[p.id]);
             const newItems = [...newItemsReversed].reverse();
@@ -445,28 +388,19 @@
             for (const p of imported) {
               updatedMap[p.id] = p;
             }
-            products = [
-              ...newItems,
-              ...Object.values(updatedMap).filter(
-                (p) => !newItems.some((n) => n.id === p.id)
-              ),
-            ];
+            products = [...newItems, ...Object.values(updatedMap).filter((p) => !newItems.some((n) => n.id === p.id))];
             const result = await importProductsToServer({
               products: obj.products,
             });
             if (result && result.success && csrfToken) {
               products = [
                 ...newItems,
-                ...Object.values(updatedMap).filter(
-                  (p) => !newItems.some((n) => n.id === p.id)
-                ),
+                ...Object.values(updatedMap).filter((p) => !newItems.some((n) => n.id === p.id)),
               ];
               LS.setProducts(products);
               toast("📥 Import i suksesshëm.");
             } else {
-              toast(
-                "⚠ Importi dështoi — serveri ose baza e të dhënave nuk janë të disponueshme."
-              );
+              toast("⚠ Importi dështoi — serveri ose baza e të dhënave nuk janë të disponueshme.");
               return;
             }
           }
@@ -496,17 +430,11 @@
       });
       waOrder.addEventListener("click", () => {
         if (!cart.length) return alert("Shporta është bosh.");
-        if (!settings.phone)
-          return alert("Vendos numrin WhatsApp te Cilësimet.");
-        const lines = cart
-          .map((i) => `• ${i.name} x${i.qty} = ${format(i.qty * i.price)}`)
-          .join("%0A");
+        if (!settings.phone) return alert("Vendos numrin WhatsApp te Cilësimet.");
+        const lines = cart.map((i) => `• ${i.name} x${i.qty} = ${format(i.qty * i.price)}`).join("%0A");
         const total = format(cart.reduce((s, i) => s + i.qty * i.price, 0));
         const msg = `Përshëndetje ${settings.brand}!%0A%0APorosia ime:%0A${lines}%0A%0ATotal: ${total}`;
-        const href = `https://wa.me/${settings.phone.replace(
-          /\D/g,
-          ""
-        )}?text=${msg}`;
+        const href = `https://wa.me/${settings.phone.replace(/\D/g, "")}?text=${msg}`;
         window.open(href, "_blank");
       });
 
@@ -516,11 +444,8 @@
           .filter(Boolean)
           .sort();
         cat.innerHTML =
-          `<option value="">Të gjitha kategoritë</option>` +
-          cats.map((c) => `<option>${esc(c)}</option>`).join("");
-        catList.innerHTML = cats
-          .map((c) => `<option value="${esc(c)}"></option>`)
-          .join("");
+          `<option value="">Të gjitha kategoritë</option>` + cats.map((c) => `<option>${esc(c)}</option>`).join("");
+        catList.innerHTML = cats.map((c) => `<option value="${esc(c)}"></option>`).join("");
       }
 
       function renderProducts() {
@@ -529,11 +454,7 @@
         let list = products.filter(
           (p) =>
             (!c || p.category === c) &&
-            (!term ||
-              [p.name, p.category, (p.tags || []).join(" ")]
-                .join(" ")
-                .toLowerCase()
-                .includes(term))
+            (!term || [p.name, p.category, (p.tags || []).join(" ")].join(" ").toLowerCase().includes(term)),
         );
         switch (sortSel.value) {
           case "priceAsc":
@@ -549,7 +470,14 @@
             /* new */ list = list;
             break;
         }
-
+        if (list.length === 0) {
+          grid.innerHTML = `
+            <p class="no-products">
+              No products found from the filtering.
+            </p>
+          `;
+          return;
+        }
         grid.innerHTML = list.map((p) => cardHTML(p)).join("");
         // bind buttons
         grid.querySelectorAll("[data-add]").forEach((btn) => {
@@ -569,18 +497,13 @@
 
       function cardHTML(p) {
         const price = format(p.price);
-        const tags = (p.tags || [])
-          .map((t) => `<span class="tag">${esc(t)}</span>`)
-          .join("");
+        const tags = (p.tags || []).map((t) => `<span class="tag">${esc(t)}</span>`).join("");
         const stock =
-          p.stock > 0
-            ? `<span class="pill">Në stok: ${p.stock}</span>`
-            : ` <span class="pill danger">S'ka stok</span>`;
+          p.stock > 0 ? `<span class="pill">Në stok: ${p.stock}</span>` : ` <span class="pill danger">S'ka stok</span>`;
         return `<div class="card">
           <div style="position:relative">
             <img src="${esc(
-              p.img ||
-                "https://images.unsplash.com/photo-1512204708464-8a9f81dc236c?q=80&w=1200&auto=format&fit=crop"
+              p.img || "https://images.unsplash.com/photo-1512204708464-8a9f81dc236c?q=80&w=1200&auto=format&fit=crop",
             )}" alt="${esc(p.name)}" loading="lazy">
             <span class="chip">${esc(p.category || "Kozmetikë")}</span>
           </div>
@@ -609,9 +532,7 @@
               (i, idx) => `<div class="line">
             <div style="flex:1">
               <div><strong>${esc(i.name)}</strong></div>
-              <div class="small muted">${format(i.price)} • ${esc(
-                i.category
-              )}</div>
+              <div class="small muted">${format(i.price)} • ${esc(i.category)}</div>
             </div>
             <div class="qty">
               <button aria-label="-" data-minus="${idx}">–</button>
@@ -619,7 +540,7 @@
               <button aria-label="+" data-plus="${idx}">+</button>
             </div>
             <button class="btn ghost danger mini" data-rem="${idx}">Hiq</button>
-          </div>`
+          </div>`,
             )
             .join("") || '<div class="small muted">Shporta bosh.</div>';
         // listeners
@@ -628,7 +549,7 @@
             (b.onclick = () => {
               cart[b.dataset.plus].qty++;
               saveCart();
-            })
+            }),
         );
         cartList.querySelectorAll("[data-minus]").forEach(
           (b) =>
@@ -636,14 +557,14 @@
               const i = cart[b.dataset.minus];
               i.qty = Math.max(1, i.qty - 1);
               saveCart();
-            })
+            }),
         );
         cartList.querySelectorAll("[data-rem]").forEach(
           (b) =>
             (b.onclick = () => {
               cart.splice(b.dataset.rem, 1);
               saveCart();
-            })
+            }),
         );
       }
 
@@ -680,13 +601,11 @@
         adminForm.tags.value = (p.tags || []).join(", ");
       }
 
-     async function delProduct(id) {
+      async function delProduct(id) {
         if (!confirm("Ta fshij këtë produkt?")) return;
         const res = await deleteProductFromServer(id);
         if (!res || !res.success || !csrfToken) {
-          toast(
-            "⚠ Nuk mund të fshihet — serveri ose baza e të dhënave nuk janë të disponueshme."
-          );
+          toast("⚠ Nuk mund të fshihet — serveri ose baza e të dhënave nuk janë të disponueshme.");
           console.error("Delete failed:", res?.error || "Unknown error");
           return;
         }
@@ -711,15 +630,13 @@
               ">": "&gt;",
               '"': "&quot;",
               "'": "&#39;",
-            }[m])
+            })[m],
         );
       }
       function format(n) {
         const cur = settings.currency || "Lek";
         const v = Number(n || 0);
-        return cur === "€"
-          ? (v / 100).toFixed(2) + " €"
-          : new Intl.NumberFormat("sq-AL").format(v) + " Lek";
+        return cur === "€" ? (v / 100).toFixed(2) + " €" : new Intl.NumberFormat("sq-AL").format(v) + " Lek";
       }
 
       // Mini toast
@@ -828,4 +745,3 @@
     </script>
   </body>
 </html>
-
